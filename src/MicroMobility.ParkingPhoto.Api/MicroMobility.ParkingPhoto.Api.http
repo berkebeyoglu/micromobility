@@ -1,0 +1,81 @@
+@host = http://localhost:5080
+@rideId = ride-demo-moped
+
+### Uygun park alanı mı? (kamera açılmadan önce haritada kullanılır)
+GET {{host}}/api/v1/parking/check?lat=40.9905&lng=29.0270&accuracy=4
+Accept-Language: tr
+
+### Geofence katmanları
+GET {{host}}/api/v1/zones
+
+### Araçlar ve sürüşler
+GET {{host}}/api/v1/vehicles
+
+###
+GET {{host}}/api/v1/rides
+
+### Yeni sürüş başlat
+POST {{host}}/api/v1/rides
+Content-Type: application/json
+
+{
+  "userId": "user-1",
+  "vehicleId": "MOPED-3001"
+}
+
+### 1) Kamera oturumu aç (tek kullanımlık token döner)
+POST {{host}}/api/v1/rides/{{rideId}}/parking-photo/session
+Content-Type: application/json
+Accept-Language: tr
+
+{
+  "deviceId": "device-1",
+  "platform": "ios",
+  "appVersion": "1.0.0"
+}
+
+### 2) Park fotoğrafını doğrula
+# photo alanı için gerçek bir dosya yolu verin; metadata alanı yukarıdaki oturumdan gelen
+# sessionId/captureToken değerlerini içermelidir.
+POST {{host}}/api/v1/rides/{{rideId}}/parking-photo/validate
+Accept-Language: tr
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="photo"; filename="parking.jpg"
+Content-Type: image/jpeg
+
+< ./App_Data/samples/parking.jpg
+--boundary
+Content-Disposition: form-data; name="metadata"
+
+{
+  "captureSessionId": "SESSION_ID",
+  "captureToken": "CAPTURE_TOKEN",
+  "source": "Camera",
+  "capturedAt": "2026-08-13T10:00:00Z",
+  "device": {
+    "deviceId": "device-1",
+    "platform": "ios",
+    "manufacturer": "Apple",
+    "model": "iPhone 15",
+    "appVersion": "1.0.0",
+    "liveCameraCapture": true
+  },
+  "gps": {
+    "latitude": 40.9905,
+    "longitude": 29.0270,
+    "accuracyMeters": 4,
+    "capturedAt": "2026-08-13T10:00:00Z",
+    "isMocked": false
+  },
+  "telemetry": {
+    "tiltDegrees": 4,
+    "measuredAt": "2026-08-13T10:00:00Z"
+  }
+}
+--boundary--
+
+### 3) Sürüşü bitir (fotoğraf onaylanmadan 409 döner)
+POST {{host}}/api/v1/rides/{{rideId}}/end
+Accept-Language: tr

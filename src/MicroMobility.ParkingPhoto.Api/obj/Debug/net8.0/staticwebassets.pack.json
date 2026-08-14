@@ -1,0 +1,25 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\HPHND\\.net core\\src\\MicroMobility.ParkingPhoto.Api\\wwwroot\\index.html",
+      "PackagePath": "staticwebassets\\index.html"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.MicroMobility.ParkingPhoto.Api.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.MicroMobility.ParkingPhoto.Api.props",
+      "PackagePath": "build\\MicroMobility.ParkingPhoto.Api.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.MicroMobility.ParkingPhoto.Api.props",
+      "PackagePath": "buildMultiTargeting\\MicroMobility.ParkingPhoto.Api.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.MicroMobility.ParkingPhoto.Api.props",
+      "PackagePath": "buildTransitive\\MicroMobility.ParkingPhoto.Api.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Park Fotoğrafı Doğrulama — Demo</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0d1117;
+    --panel: #161b22;
+    --panel-2: #1c2129;
+    --line: #2a313c;
+    --text: #e6edf3;
+    --muted: #9aa7b4;
+    --accent: #3fb950;
+    --danger: #f85149;
+    --warn: #d29922;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.5 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  header { padding: 28px 20px 8px; text-align: center; }
+  header h1 { margin: 0 0 4px; font-size: 22px; }
+  header p { margin: 0; color: var(--muted); font-size: 14px; }
+  main { max-width: 1040px; margin: 0 auto; padding: 20px; display: grid; gap: 18px; grid-template-columns: 1fr 1fr; }
+  @media (max-width: 860px) { main { grid-template-columns: 1fr; } }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
+  .card h2 { margin: 0 0 14px; font-size: 15px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  label { display: block; font-size: 13px; color: var(--muted); margin: 12px 0 5px; }
+  select, input[type=text], input[type=number] {
+    width: 100%; padding: 9px 11px; background: var(--panel-2); color: var(--text);
+    border: 1px solid var(--line); border-radius: 9px; font-size: 14px;
+  }
+  input[type=range] { width: 100%; }
+  .row { display: flex; gap: 10px; }
+  .row > * { flex: 1; }
+  .chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 8px; }
+  .chip {
+    padding: 6px 11px; font-size: 12.5px; border-radius: 999px; cursor: pointer;
+    background: var(--panel-2); border: 1px solid var(--line); color: var(--text);
+  }
+  .chip:hover { border-color: var(--accent); }
+  .switch { display: flex; align-items: center; gap: 9px; margin-top: 12px; font-size: 14px; color: var(--text); }
+  button.primary {
+    width: 100%; margin-top: 18px; padding: 13px; font-size: 15px; font-weight: 600; cursor: pointer;
+    background: var(--accent); color: #06210c; border: 0; border-radius: 10px;
+  }
+  button.primary:disabled { opacity: .55; cursor: progress; }
+  pre {
+    margin: 0; padding: 12px; background: #0b0f14; border: 1px solid var(--line); border-radius: 10px;
+    font-size: 12px; max-height: 340px; overflow: auto; color: #b6c2cf;
+  }
+  .badge { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+  .ok { background: rgba(63,185,80,.15); color: var(--accent); }
+  .bad { background: rgba(248,81,73,.15); color: var(--danger); }
+  .review { background: rgba(210,153,34,.15); color: var(--warn); }
+  .overlay {
+    position: fixed; inset: 0; background: rgba(2,5,10,.72); display: none;
+    align-items: flex-end; justify-content: center; padding: 16px; z-index: 10;
+  }
+  .overlay.open { display: flex; }
+  .sheet {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 22px;
+    width: 100%; max-width: 460px; animation: rise .18s ease-out;
+  }
+  @keyframes rise { from { transform: translateY(20px); opacity: 0 } to { transform: none; opacity: 1 } }
+  .sheet h3 { margin: 10px 0 6px; font-size: 19px; }
+  .sheet .headline { color: var(--muted); font-size: 14px; margin-bottom: 14px; }
+  .issue { border-left: 3px solid var(--danger); padding: 8px 0 8px 12px; margin-bottom: 12px; }
+  .issue strong { display: block; font-size: 14px; margin-bottom: 2px; }
+  .issue span { font-size: 13.5px; color: #c9d4e0; }
+  .issue em { display: block; font-style: normal; font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+  .sheet button { width: 100%; padding: 12px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; border: 0; }
+  .sheet .retake { background: var(--danger); color: #fff; margin-top: 6px; }
+  .sheet .secondary { background: transparent; border: 1px solid var(--line); color: var(--text); margin-top: 8px; }
+  .sheet .done { background: var(--accent); color: #06210c; margin-top: 6px; }
+  .emoji { font-size: 28px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Sürüş bitirme — park fotoğrafı kontrolü</h1>
+  <p>Fotoğraf kaynağı, GPS park uygunluğu, plaka okunabilirliği ve aracın dik duruşu tek çağrıda doğrulanır.</p>
+</header>
+
+<main>
+  <section class="card">
+    <h2>Sürüş ve kamera</h2>
+
+    <label for="ride">Sürüş</label>
+    <select id="ride"></select>
+
+    <label for="source">Fotoğraf kaynağı</label>
+    <select id="source">
+      <option value="Camera">Telefon kamerası (canlı çekim)</option>
+      <option value="Gallery">Galeriden seçilen görsel</option>
+      <option value="Screenshot">Ekran görüntüsü</option>
+    </select>
+
+    <div class="switch">
+      <input type="checkbox" id="freshToken" checked />
+      <label for="freshToken" style="margin:0">Geçerli kamera oturumu kullan</label>
+    </div>
+
+    <label>Konum (enlem / boylam)</label>
+    <div class="row">
+      <input type="text" id="lat" value="40.990300" />
+      <input type="text" id="lng" value="29.028100" />
+    </div>
+    <div class="chips" id="presets"></div>
+
+    <label for="accuracy">GPS hassasiyeti: <span id="accuracyLabel">5</span> m</label>
+    <input type="range" id="accuracy" min="1" max="60" value="5" />
+  </section>
+
+  <section class="card">
+    <h2>Araç durumu (görüntü analizi simülasyonu)</h2>
+
+    <label for="tilt">Aracın eğimi: <span id="tiltLabel">5</span>°</label>
+    <input type="range" id="tilt" min="0" max="90" value="5" />
+
+    <div class="switch">
+      <input type="checkbox" id="vehicleDetected" checked />
+      <label for="vehicleDetected" style="margin:0">Araç fotoğrafta görünüyor</label>
+    </div>
+
+    <div class="switch">
+      <input type="checkbox" id="plateDetected" checked />
+      <label for="plateDetected" style="margin:0">Plaka fotoğrafta tespit edildi</label>
+    </div>
+
+    <label for="plateConfidence">Plaka okunabilirliği: <span id="plateLabel">0.92</span></label>
+    <input type="range" id="plateConfidence" min="0" max="100" value="92" />
+
+    <label for="plateText">Okunan plaka</label>
+    <input type="text" id="plateText" placeholder="Aracın kayıtlı plakası kullanılır" />
+
+    <button class="primary" id="submit">Fotoğrafı çek ve gönder</button>
+  </section>
+
+  <section class="card" style="grid-column: 1 / -1">
+    <h2>Sonuç <span id="decision"></span></h2>
+    <pre id="output">Henüz fotoğraf gönderilmedi.</pre>
+  </section>
+</main>
+
+<div class="overlay" id="overlay">
+  <div class="sheet">
+    <div class="emoji" id="sheetIcon">⚠️</div>
+    <h3 id="sheetTitle"></h3>
+    <div class="headline" id="sheetHeadline"></div>
+    <div id="sheetIssues"></div>
+    <button class="retake" id="sheetPrimary"></button>
+    <button class="secondary" id="sheetSecondary" hidden></button>
+  </div>
+</div>
+
+<script>
+const PRESETS = [
+  ['Uygun park cebi', 40.9903, 29.0281],
+  ['Yaya yolu', 40.9905, 29.0270],
+  ['Yaya geçidi', 40.9908, 29.0262],
+  ['Engelli rampası', 40.9896, 29.0291],
+  ['Otobüs durağı', 40.9890, 29.0300],
+  ['Özel mülk', 40.9880, 29.0255],
+  ['Park yasağı', 40.9920, 29.0245],
+  ['Hizmet alanı dışı', 41.0200, 29.0800]
+];
+
+const $ = id => document.getElementById(id);
+
+PRESETS.forEach(([name, lat, lng]) => {
+  const chip = document.createElement('button');
+  chip.className = 'chip';
+  chip.textContent = name;
+  chip.onclick = () => { $('lat').value = lat.toFixed(6); $('lng').value = lng.toFixed(6); };
+  $('presets').appendChild(chip);
+});
+
+for (const [input, label, fmt] of [
+  ['accuracy', 'accuracyLabel', v => v],
+  ['tilt', 'tiltLabel', v => v],
+  ['plateConfidence', 'plateLabel', v => (v / 100).toFixed(2)]
+]) {
+  $(input).addEventListener('input', e => { $(label).textContent = fmt(e.target.value); });
+}
+
+async function loadRides() {
+  const rides = await (await fetch('/api/v1/rides')).json();
+  const vehicles = await (await fetch('/api/v1/vehicles')).json();
+  const byId = Object.fromEntries(vehicles.map(v => [v.id, v]));
+
+  $('ride').innerHTML = rides.map(r => {
+    const v = byId[r.vehicleId];
+    const plate = v && v.plateNumber ? ` — plaka ${v.plateNumber}` : ' — plakasız';
+    return `<option value="${r.id}">${r.id} (${r.vehicleId}${plate})</option>`;
+  }).join('');
+}
+
+/** Produces a JPEG in the browser so the demo does not need a real photo file. */
+function renderPhoto() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 1600;
+  canvas.height = 1200;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#20303f';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#8fa6bb';
+  ctx.font = '48px sans-serif';
+  ctx.fillText('demo park fotoğrafı', 80, 120);
+  ctx.fillText(new Date().toISOString(), 80, 200);
+  return new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.85));
+}
+
+async function sha256Hex(buffer) {
+  const digest = await crypto.subtle.digest('SHA-256', buffer);
+  return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+}
+
+function renderSheet(result) {
+  const warning = result.warning;
+  if (!warning) {
+    $('overlay').classList.remove('open');
+    return;
+  }
+
+  $('sheetIcon').textContent = result.decision === 'ManualReview' ? '🛠️' : '⚠️';
+  $('sheetTitle').textContent = warning.title;
+  $('sheetHeadline').textContent = warning.headline;
+  $('sheetIssues').innerHTML = result.issues.map(i => `
+    <div class="issue">
+      <strong>${i.title}</strong>
+      <span>${i.message}</span>
+      ${i.action ? `<em>→ ${i.action}</em>` : ''}
+    </div>`).join('');
+  $('sheetPrimary').textContent = warning.primaryButton;
+  $('sheetPrimary').className = 'retake';
+  $('sheetSecondary').hidden = !warning.secondaryButton;
+  $('sheetSecondary').textContent = warning.secondaryButton || '';
+  $('overlay').classList.add('open');
+}
+
+function renderSuccess(result) {
+  $('sheetIcon').textContent = '✅';
+  $('sheetTitle').textContent = 'Fotoğraf onaylandı';
+  $('sheetHeadline').textContent = 'Park yeri uygun. Sürüşünüz bitirildi, iyi günler!';
+  $('sheetIssues').innerHTML = '';
+  $('sheetPrimary').textContent = 'Tamam';
+  $('sheetPrimary').className = 'done';
+  $('sheetSecondary').hidden = true;
+  $('overlay').classList.add('open');
+}
+
+$('sheetPrimary').onclick = () => $('overlay').classList.remove('open');
+$('sheetSecondary').onclick = () => $('overlay').classList.remove('open');
+$('overlay').onclick = e => { if (e.target === $('overlay')) $('overlay').classList.remove('open'); };
+
+$('submit').onclick = async () => {
+  const button = $('submit');
+  button.disabled = true;
+  button.textContent = 'Kontrol ediliyor…';
+
+  try {
+    const rideId = $('ride').value;
+    const session = await (await fetch(`/api/v1/rides/${rideId}/parking-photo/session`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ deviceId: 'demo-device', platform: 'web', appVersion: '1.0.0' })
+    })).json();
+
+    const blob = await renderPhoto();
+    const bytes = await blob.arrayBuffer();
+    const useToken = $('freshToken').checked;
+
+    const metadata = {
+      captureSessionId: useToken ? session.sessionId : 'expired-session',
+      captureToken: useToken ? session.captureToken : 'invalid-token',
+      source: $('source').value,
+      capturedAt: new Date().toISOString(),
+      photoSha256: await sha256Hex(bytes),
+      device: {
+        deviceId: 'demo-device',
+        platform: 'web',
+        manufacturer: 'Demo',
+        model: 'Browser',
+        appVersion: '1.0.0',
+        liveCameraCapture: $('source').value === 'Camera'
+      },
+      gps: {
+        latitude: parseFloat($('lat').value),
+        longitude: parseFloat($('lng').value),
+        accuracyMeters: parseFloat($('accuracy').value),
+        capturedAt: new Date().toISOString(),
+        isMocked: false
+      },
+      visionHints: {
+        vehicleDetected: $('vehicleDetected').checked,
+        vehicleTiltDegrees: parseFloat($('tilt').value),
+        plateDetected: $('plateDetected').checked,
+        plateText: $('plateText').value || session.plateNumber || null,
+        plateConfidence: parseFloat($('plateConfidence').value) / 100
+      }
+    };
+
+    const form = new FormData();
+    form.append('photo', new File([blob], 'parking.jpg', { type: 'image/jpeg' }));
+    form.append('metadata', JSON.stringify(metadata));
+
+    const response = await fetch(`/api/v1/rides/${rideId}/parking-photo/validate`, {
+      method: 'POST',
+      headers: { 'Accept-Language': 'tr' },
+      body: form
+    });
+    const result = await response.json();
+
+    $('output').textContent = JSON.stringify(result, null, 2);
+    const badgeClass = result.decision === 'Accepted' ? 'ok' : result.decision === 'ManualReview' ? 'review' : 'bad';
+    $('decision').innerHTML = `<span class="badge ${badgeClass}">${result.decision}</span>`;
+
+    if (result.decision === 'Accepted') {
+      await fetch(`/api/v1/rides/${rideId}/end`, { method: 'POST', headers: { 'Accept-Language': 'tr' } });
+      renderSuccess(result);
+    } else {
+      renderSheet(result);
+    }
+  } catch (error) {
+    $('output').textContent = 'Hata: ' + error;
+  } finally {
+    button.disabled = false;
+    button.textContent = 'Fotoğrafı çek ve gönder';
+  }
+};
+
+loadRides();
+</script>
+</body>
+</html>

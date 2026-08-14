@@ -1,0 +1,39 @@
+{
+  "Version": 1,
+  "Hash": "x2MZW9nnYt0p8pqfm9wb/VXAyE6NAwd9KDRPhYDmIMk=",
+  "Source": "MicroMobility.ParkingPhoto.Api",
+  "BasePath": "_content/MicroMobility.ParkingPhoto.Api",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "MicroMobility.ParkingPhoto.Api\\wwwroot",
+      "Source": "MicroMobility.ParkingPhoto.Api",
+      "ContentRoot": "C:\\Users\\HPHND\\.net core\\src\\MicroMobility.ParkingPhoto.Api\\wwwroot\\",
+      "BasePath": "_content/MicroMobility.ParkingPhoto.Api",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": [
+    {
+      "Identity": "C:\\Users\\HPHND\\.net core\\src\\MicroMobility.ParkingPhoto.Api\\wwwroot\\index.html",
+      "SourceId": "MicroMobility.ParkingPhoto.Api",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\HPHND\\.net core\\src\\MicroMobility.ParkingPhoto.Api\\wwwroot\\",
+      "BasePath": "_content/MicroMobility.ParkingPhoto.Api",
+      "RelativePath": "index.html",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\index.html"
+    }
+  ]
+}
